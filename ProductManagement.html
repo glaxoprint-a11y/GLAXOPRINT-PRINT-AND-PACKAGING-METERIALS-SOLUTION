@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product & Reward Management - Smart Loyalty System</title>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    body {
+      background: radial-gradient(circle at top left, #1e1b4b, #0f172a 70%);
+      color: #f8fafc;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container { max-width: 1250px; margin: 0 auto; }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 18px 24px;
+      border-radius: 18px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 24px;
+    }
+    .header-title h1 { font-size: 1.4rem; color: #38bdf8; letter-spacing: 0.5px; }
+    .header-title p { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+    
+    .btn-back {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 9px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .btn-back:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+
+    .nav-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: #f8fafc; background: rgba(255, 255, 255, 0.08); }
+    .tab-btn.active {
+      background: linear-gradient(90deg, #6366f1, #38bdf8);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 992px) {
+      .grid-layout { grid-template-columns: 1fr; }
+    }
+
+    .panel-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      color: #f1f5f9;
+      font-weight: 600;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .form-control option { background: #0f172a; color: #fff; }
+    .form-control:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #6366f1, #38bdf8);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 8px;
+    }
+    .btn-submit:hover { opacity: 0.92; box-shadow: 0 0 16px rgba(56, 189, 248, 0.35); }
+    .btn-submit:disabled { background: #475569; cursor: not-allowed; box-shadow: none; }
+
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.88rem;
+    }
+    th { background: rgba(0, 0, 0, 0.35); color: #94a3b8; font-weight: 600; white-space: nowrap; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .badge-brand {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; }
+    .alert-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <div class="header">
+      <div class="header-title">
+        <h1>📦 Inventory & Reward Management</h1>
+        <p>প্রোডাক্ট, ক্যাটাগরি, ব্র্যান্ড এবং স্পিন হুইল রিওয়ার্ড পুল যোগ ও পরিচালনা করুন</p>
+      </div>
+      <a href="AdminDashboard.html" class="btn-back">← Back to Dashboard</a>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button type="button" class="tab-btn active" onclick="switchTab('productsTab', this)">🛍️ Products</button>
+      <button type="button" class="tab-btn" onclick="switchTab('categoryBrandTab', this)">🏷 Category & Brand</button>
+      <button type="button" class="tab-btn" onclick="switchTab('rewardPoolTab', this)">🎰 Reward Pool (Spin Wheel)</button>
+    </div>
+
+    <!-- TAB 1: PRODUCTS -->
+    <div id="productsTab" class="tab-content active">
+      <div class="grid-layout">
+        <div class="panel-card">
+          <div class="panel-title">➕ Add New Product</div>
+          <div id="prodAlert" class="alert"></div>
+
+          <form id="productForm" onsubmit="handleProductSubmit(event)">
+            <div class="form-group">
+              <label for="prodCode">Product Code / HSN *</label>
+              <input type="text" id="prodCode" class="form-control" placeholder="যেমন: PROD-101" required>
+            </div>
+
+            <div class="form-group">
+              <label for="prodName">Product Name *</label>
+              <input type="text" id="prodName" class="form-control" placeholder="যেমন: Smart LED Bulb 12W" required>
+            </div>
+
+            <div class="form-group">
+              <label for="prodCategory">Category / Product Type *</label>
+              <select id="prodCategory" class="form-control cat-dropdown" required>
+                <option value="">ক্যাটাগরি সিলেক্ট করুন</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="prodBrand">Brand / Band *</label>
+              <select id="prodBrand" class="form-control brand-dropdown" required>
+                <option value="">ব্র্যান্ড সিলেক্ট করুন</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="prodPrice">Unit Price (₹) *</label>
+              <input type="number" id="prodPrice" class="form-control" placeholder="যেমন: 450" required>
+            </div>
+
+            <button type="submit" id="btnSaveProd" class="btn-submit">প্রোডাক্ট সেভ করুন</button>
+          </form>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">📋 Product List</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Product Name</th>
+                  <th>Category</th>
+                  <th>Brand</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody">
+                <tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">ডাটা লোড হচ্ছে...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: CATEGORY & BRAND -->
+    <div id="categoryBrandTab" class="tab-content">
+      <div class="grid-layout">
+        <div class="panel-card">
+          <div class="panel-title">🏷️ Add Category / Product Type</div>
+          <div id="catAlert" class="alert"></div>
+
+          <form id="categoryForm" onsubmit="handleCategorySubmit(event)">
+            <div class="form-group">
+              <label for="catName">Category Name *</label>
+              <input type="text" id="catName" class="form-control" placeholder="যেমন: Electronics" required>
+            </div>
+            <button type="submit" id="btnSaveCat" class="btn-submit">ক্যাটাগরি সেভ করুন</button>
+          </form>
+
+          <div style="margin-top: 24px;" class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Category Name</th></tr>
+              </thead>
+              <tbody id="categoryTableBody">
+                <tr><td style="text-align:center; color:#94a3b8;">লোড হচ্ছে...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">🛡️ Add Brand / Band</div>
+          <div id="brandAlert" class="alert"></div>
+
+          <form id="brandForm" onsubmit="handleBrandSubmit(event)">
+            <div class="form-group">
+              <label for="brandName">Brand Name *</label>
+              <input type="text" id="brandName" class="form-control" placeholder="যেমন: Philips" required>
+            </div>
+            <button type="submit" id="btnSaveBrand" class="btn-submit">ব্র্যান্ড সেভ করুন</button>
+          </form>
+
+          <div style="margin-top: 24px;" class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Brand Name</th></tr>
+              </thead>
+              <tbody id="brandTableBody">
+                <tr><td style="text-align:center; color:#94a3b8;">লোড হচ্ছে...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: REWARD POOL -->
+    <div id="rewardPoolTab" class="tab-content">
+      <div class="grid-layout">
+        <div class="panel-card">
+          <div class="panel-title">🎁 Add Reward Item (For Spin Wheel)</div>
+          <div id="rewardAlert" class="alert"></div>
+
+          <form id="rewardForm" onsubmit="handleRewardSubmit(event)">
+            <div class="form-group">
+              <label for="rewardName">Reward Title / Item Name *</label>
+              <input type="text" id="rewardName" class="form-control" placeholder="যেমন: Smart Watch / ₹500 Cashback" required>
+            </div>
+
+            <div class="form-group">
+              <label for="rewardCategory">Applicable Category *</label>
+              <select id="rewardCategory" class="form-control cat-dropdown" required>
+                <option value="ALL">ALL (সকল ক্যাটাগরির জন্য)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="rewardBrand">Applicable Brand *</label>
+              <select id="rewardBrand" class="form-control brand-dropdown" required>
+                <option value="ALL">ALL (সকল ব্র্যান্ডের জন্য)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="rewardProb">Winning Probability / Weight (%) *</label>
+              <input type="number" id="rewardProb" class="form-control" placeholder="যেমন: 10" min="1" max="100" required>
+            </div>
+
+            <div class="form-group">
+              <label for="rewardStock">Available Stock / Quantity *</label>
+              <input type="number" id="rewardStock" class="form-control" placeholder="যেমন: 5" required>
+            </div>
+
+            <button type="submit" id="btnSaveReward" class="btn-submit" style="background: linear-gradient(90deg, #ec4899, #8b5cf6);">রিওয়ার্ড ডাটাবেজে সেভ করুন</button>
+          </form>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">🎰 Active Spin Rewards List</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reward Item</th>
+                  <th>Category</th>
+                  <th>Brand</th>
+                  <th>Prob (%)</th>
+                  <th>Stock</th>
+                </tr>
+              </thead>
+              <tbody id="rewardTableBody">
+                <tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">ডাটা লোড হচ্ছে...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpO6TXjmn0Y1axPmS8QyaqGQU_8MWDfp53LNMQ3D3aJDBujwLFtXxtH7S8RyTcrSBr/exec";
+
+    window.onload = function() {
+      // কোনো সিকিউরিটি গার্ড ছাড়াই সরাসরি ডাটা লোড ফাংশন কল হবে
+      loadInventoryData();
+    };
+
+    function switchTab(tabId, btn) {
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < contents.length; i++) {
+        contents[i].classList.remove('active');
+      }
+
+      var buttons = document.querySelectorAll('.tab-btn');
+      for (var j = 0; j < buttons.length; j++) {
+        buttons[j].classList.remove('active');
+      }
+
+      var targetTab = document.getElementById(tabId);
+      if (targetTab) {
+        targetTab.classList.add('active');
+      }
+      
+      if (btn) {
+        btn.classList.add('active');
+      }
+    }
+
+    function loadInventoryData() {
+      fetch(WEB_APP_URL + "?action=getInventoryAndRewardsData")
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          renderAllInventoryData(data);
+        })
+        .catch(function(err) {
+          console.error("Load Error: ", err);
+        });
+    }
+
+    function renderAllInventoryData(data) {
+      if (!data) return;
+
+      // 1. Categories
+      if (data.categories) {
+        var catDropdowns = document.querySelectorAll('.cat-dropdown');
+        for (var c = 0; c < catDropdowns.length; c++) {
+          var select = catDropdowns[c];
+          var isRewardSelect = (select.id === 'rewardCategory');
+          var optionsHtml = isRewardSelect ? '<option value="ALL">ALL (সকল ক্যাটাগরির জন্য)</option>' : '<option value="">ক্যাটাগরি সিলেক্ট করুন</option>';
+          
+          for (var i = 0; i < data.categories.length; i++) {
+            optionsHtml += '<option value="' + data.categories[i] + '">' + data.categories[i] + '</option>';
+          }
+          select.innerHTML = optionsHtml;
+        }
+
+        var catTbody = document.getElementById('categoryTableBody');
+        if (catTbody) {
+          if (data.categories.length === 0) {
+            catTbody.innerHTML = '<tr><td style="text-align:center; color:#94a3b8;">কোনো ক্যাটাগরি নেই।</td></tr>';
+          } else {
+            var catHtml = '';
+            for (var cIdx = 0; cIdx < data.categories.length; cIdx++) {
+              catHtml += '<tr><td>' + data.categories[cIdx] + '</td></tr>';
+            }
+            catTbody.innerHTML = catHtml;
+          }
+        }
+      }
+
+      // 2. Brands
+      if (data.brands) {
+        var brandDropdowns = document.querySelectorAll('.brand-dropdown');
+        for (var b = 0; b < brandDropdowns.length; b++) {
+          var selectB = brandDropdowns[b];
+          var isRewardSelectB = (selectB.id === 'rewardBrand');
+          var optionsHtmlB = isRewardSelectB ? '<option value="ALL">ALL (সকল ব্র্যান্ডের জন্য)</option>' : '<option value="">ব্র্যান্ড সিলেক্ট করুন</option>';
+          
+          for (var j = 0; j < data.brands.length; j++) {
+            optionsHtmlB += '<option value="' + data.brands[j] + '">' + data.brands[j] + '</option>';
+          }
+          selectB.innerHTML = optionsHtmlB;
+        }
+
+        var brandTbody = document.getElementById('brandTableBody');
+        if (brandTbody) {
+          if (data.brands.length === 0) {
+            brandTbody.innerHTML = '<tr><td style="text-align:center; color:#94a3b8;">কোনো ব্র্যান্ড নেই।</td></tr>';
+          } else {
+            var brandHtml = '';
+            for (var bIdx = 0; bIdx < data.brands.length; bIdx++) {
+              brandHtml += '<tr><td>' + data.brands[bIdx] + '</td></tr>';
+            }
+            brandTbody.innerHTML = brandHtml;
+          }
+        }
+      }
+
+      // 3. Products
+      var prodTbody = document.getElementById('productTableBody');
+      if (prodTbody) {
+        var products = data.products || [];
+        if (products.length === 0) {
+          prodTbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">কোনো প্রোডাক্ট নেই।</td></tr>';
+        } else {
+          var prodHtml = '';
+          for (var p = 0; p < products.length; p++) {
+            prodHtml += '<tr>' +
+              '<td><strong>' + products[p].code + '</strong></td>' +
+              '<td>' + products[p].name + '</td>' +
+              '<td>' + products[p].category + '</td>' +
+              '<td>' + products[p].brand + '</td>' +
+              '<td>₹' + Number(products[p].price).toLocaleString('en-IN') + '</td>' +
+              '</tr>';
+          }
+          prodTbody.innerHTML = prodHtml;
+        }
+      }
+
+      // 4. Rewards
+      var rewardTbody = document.getElementById('rewardTableBody');
+      if (rewardTbody) {
+        var rewards = data.rewards || [];
+        if (rewards.length === 0) {
+          rewardTbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">কোনো রিওয়ার্ড আইটেম নেই।</td></tr>';
+        } else {
+          var rewardHtml = '';
+          for (var r = 0; r < rewards.length; r++) {
+            rewardHtml += '<tr>' +
+              '<td><strong>' + rewards[r].name + '</strong></td>' +
+              '<td><span class="badge-brand">' + rewards[r].category + '</span></td>' +
+              '<td><span class="badge-brand" style="color:#ec4899; border-color:rgba(236,72,153,0.3); background:rgba(236,72,153,0.15);">' + rewards[r].brand + '</span></td>' +
+              '<td>' + rewards[r].prob + '%</td>' +
+              '<td>' + rewards[r].stock + '</td>' +
+              '</tr>';
+          }
+          rewardTbody.innerHTML = rewardHtml;
+        }
+      }
+    }
+
+    function handleProductSubmit(e) {
+      e.preventDefault();
+      sendViaFetch('addNewProduct', {
+        code: document.getElementById('prodCode').value,
+        name: document.getElementById('prodName').value,
+        category: document.getElementById('prodCategory').value,
+        brand: document.getElementById('prodBrand').value,
+        price: document.getElementById('prodPrice').value
+      }, 'prodAlert', 'productForm', 'btnSaveProd');
+    }
+
+    function handleCategorySubmit(e) {
+      e.preventDefault();
+      sendViaFetch('addNewCategory', { name: document.getElementById('catName').value }, 'catAlert', 'categoryForm', 'btnSaveCat');
+    }
+
+    function handleBrandSubmit(e) {
+      e.preventDefault();
+      sendViaFetch('addNewBrand', { name: document.getElementById('brandName').value }, 'brandAlert', 'brandForm', 'btnSaveBrand');
+    }
+
+    function handleRewardSubmit(e) {
+      e.preventDefault();
+      sendViaFetch('addNewRewardItem', {
+        name: document.getElementById('rewardName').value,
+        category: document.getElementById('rewardCategory').value,
+        brand: document.getElementById('rewardBrand').value,
+        prob: document.getElementById('rewardProb').value,
+        stock: document.getElementById('rewardStock').value
+      }, 'rewardAlert', 'rewardForm', 'btnSaveReward');
+    }
+
+    function sendViaFetch(backendFunc, payload, alertId, formId, btnId) {
+      var btn = document.getElementById(btnId);
+      var originalText = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = "সেভ হচ্ছে...";
+
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: backendFunc, payload: payload })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
+        if (res && res.success) {
+          showAlert(alertId, 'alert-success', res.message || 'সফলভাবে সেভ করা হয়েছে!');
+          document.getElementById(formId).reset();
+          loadInventoryData();
+        } else {
+          showAlert(alertId, 'alert-danger', (res && res.message) || 'সেভ করতে সমস্যা হয়েছে!');
+        }
+        btn.disabled = false;
+        btn.innerText = originalText;
+      })
+      .catch(function(err) {
+        showAlert(alertId, 'alert-danger', 'ত্রুটি: ' + err.message);
+        btn.disabled = false;
+        btn.innerText = originalText;
+      });
+    }
+
+    function showAlert(id, className, msg) {
+      var box = document.getElementById(id);
+      box.className = 'alert ' + className;
+      box.innerText = msg;
+      box.style.display = 'block';
+      setTimeout(function() { box.style.display = 'none'; }, 4000);
+    }
+  </script>
+</body>
+</html>

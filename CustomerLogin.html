@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Login - Smart Loyalty System</title>
+  
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: radial-gradient(circle at top left, #1e1b4b, #0f172a 70%); color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-wrapper { width: 100%; max-width: 420px; }
+    .login-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; padding: 32px 30px; backdrop-filter: blur(16px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35); }
+    .btn-back { display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #cbd5e1; padding: 8px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; margin-bottom: 20px; text-decoration: none; }
+    .btn-back:hover { background: rgba(255, 255, 255, 0.18); color: #ffffff; }
+    .brand-header { text-align: center; margin-bottom: 28px; }
+    .brand-icon { font-size: 2.8rem; margin-bottom: 10px; display: inline-block; background: linear-gradient(135deg, #6366f1, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .brand-header h1 { font-size: 1.5rem; color: #f8fafc; font-weight: 700; }
+    .brand-header p { font-size: 0.85rem; color: #94a3b8; margin-top: 6px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 8px; font-weight: 500; }
+    .form-control { width: 100%; padding: 12px 16px; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none; transition: all 0.3s; }
+    .form-control:focus { border-color: #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); }
+    .btn-login { width: 100%; padding: 13px; background: linear-gradient(90deg, #6366f1, #38bdf8); border: none; border-radius: 12px; color: #fff; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+    .btn-login:hover { opacity: 0.92; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+    .btn-login:disabled { background: #475569; cursor: not-allowed; box-shadow: none; }
+    .alert { padding: 12px 14px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 20px; display: none; text-align: center; }
+    .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; }
+    .alert-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; }
+    .footer-text { text-align: center; margin-top: 24px; font-size: 0.8rem; color: #64748b; }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+      <a href="index.html" class="btn-back">← Back to Home</a>
+
+      <div class="brand-header">
+        <div class="brand-icon">🎁</div>
+        <h1>Customer Login</h1>
+        <p>আপনার ইউজার আইডি বা মোবাইল নম্বর এবং পাসওয়ার্ড দিন</p>
+      </div>
+
+      <div id="loginAlert" class="alert"></div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="custUid">Customer UID / Mobile *</label>
+          <input type="text" id="custUid" class="form-control" placeholder="যেমন: 9876543210" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="custPassword">Password / PIN *</label>
+          <input type="password" id="custPassword" class="form-control" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" id="btnLogin" class="btn-login">লগইন করুন</button>
+      </form>
+
+      <div class="footer-text">
+        লগইনে সমস্যা হলে শপ অ্যাডমিনের সাথে যোগাযোগ করুন।
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpO6TXjmn0Y1axPmS8QyaqGQU_8MWDfp53LNMQ3D3aJDBujwLFtXxtH7S8RyTcrSBr/exec";
+
+    function handleLogin(e) {
+      e.preventDefault();
+      var uid = document.getElementById('custUid').value.trim();
+      var password = document.getElementById('custPassword').value.trim();
+
+      var btn = document.getElementById('btnLogin');
+      btn.disabled = true;
+      btn.innerText = "যাচাই করা হচ্ছে...";
+
+      var payload = { uid: uid, password: password };
+
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: "authenticateCustomer", payload: payload })
+      })
+      .then(res => res.text())
+      .then(text => {
+        try {
+          var res = JSON.parse(text);
+          if (res && res.success) {
+            sessionStorage.setItem('customerUid', res.uid || uid);
+            localStorage.setItem('customerUid', res.uid || uid);
+
+            showAlert('loginAlert', 'alert-success', 'লগইন সফল! ড্যাশবোর্ডে প্রবেশ করা হচ্ছে...');
+            setTimeout(function() {
+              window.location.replace('CustomerDashboard.html');
+            }, 800);
+          } else {
+            showAlert('loginAlert', 'alert-danger', res.message || 'ভুল আইডি বা পাসওয়ার্ড!');
+            resetBtn();
+          }
+        } catch (err) {
+          console.error("JSON Error:", text);
+          showAlert('loginAlert', 'alert-danger', 'সার্ভার থেকে সঠিক রেসপন্স আসেনি।');
+          resetBtn();
+        }
+      })
+      .catch(err => {
+        showAlert('loginAlert', 'alert-danger', 'সার্ভার ত্রুটি! আবার চেষ্টা করুন।');
+        resetBtn();
+      });
+  }
+
+  function resetBtn() {
+    var btn = document.getElementById('btnLogin');
+    btn.disabled = false;
+    btn.innerText = "লগইন করুন";
+  }
+
+  function showAlert(elementId, className, message) {
+    var alertBox = document.getElementById(elementId);
+    alertBox.className = 'alert ' + className;
+    alertBox.innerText = message;
+    alertBox.style.display = 'block';
+  }
+  </script>
+</body>
+</html>

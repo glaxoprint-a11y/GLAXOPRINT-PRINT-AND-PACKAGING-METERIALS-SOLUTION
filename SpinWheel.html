@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spin & Win - Smart Loyalty System</title>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: radial-gradient(circle at top left, #1e1b4b, #0f172a 70%); color: #f8fafc; min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+    .container { width: 100%; max-width: 900px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 18px 24px; border-radius: 18px; backdrop-filter: blur(12px); margin-bottom: 24px; width: 100%; flex-wrap: wrap; gap: 10px; }
+    .header-title h1 { font-size: 1.4rem; color: #38bdf8; }
+    .header-title p { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+    .btn-back { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #cbd5e1; padding: 9px 18px; border-radius: 10px; cursor: pointer; text-decoration: none; font-size: 0.88rem; }
+    
+    .status-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; width: 100%; }
+    .status-info { display: flex; align-items: center; gap: 14px; }
+    .status-icon { font-size: 2.2rem; }
+    .status-text h3 { font-size: 1.05rem; color: #f1f5f9; }
+    .status-text p { font-size: 0.85rem; color: #94a3b8; margin-top: 2px; }
+    .spin-count-badge { background: linear-gradient(135deg, #6366f1, #38bdf8); padding: 8px 18px; border-radius: 30px; font-size: 0.9rem; font-weight: 700; color: #fff; }
+
+    .wheel-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 36px 20px; display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; }
+    .wheel-wrapper { position: relative; width: 340px; height: 340px; margin: 20px 0 30px 0; }
+    .wheel-pointer { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 28px solid #ef4444; z-index: 10; }
+    canvas#wheelCanvas { width: 100%; height: 100%; border-radius: 50%; border: 6px solid rgba(255, 255, 255, 0.15); }
+
+    .btn-spin { background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; padding: 14px 42px; font-size: 1.1rem; font-weight: 700; border-radius: 30px; cursor: pointer; transition: all 0.3s; }
+    .btn-spin:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+    .modal-box { background: rgba(30, 27, 75, 0.95); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 24px; padding: 32px; max-width: 420px; width: 100%; text-align: center; }
+    .modal-icon { font-size: 3.5rem; margin-bottom: 12px; }
+    .modal-title { font-size: 1.4rem; color: #38bdf8; font-weight: 700; margin-bottom: 8px; }
+    .modal-desc { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 20px; }
+    .btn-claim { background: linear-gradient(90deg, #6366f1, #38bdf8); border: none; color: #fff; padding: 12px 30px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-title">
+        <h1>🎡 Lucky Spin & Win</h1>
+        <p id="headerProductSub">নির্দিষ্ট প্রোডাক্ট ও ব্র্যান্ডের টার্গেট ১০০% পূর্ণ হলে রিওয়ার্ড জিতুন</p>
+      </div>
+      <button class="btn-back" onclick="goBackToDashboard()">← Dashboard</button>
+    </div>
+
+    <div class="status-card">
+      <div class="status-info">
+        <div class="status-icon" id="statusIcon">🎯</div>
+        <div class="status-text">
+          <h3 id="targetStatusTitle">টার্গেট স্টেটাস লোড হচ্ছে...</h3>
+          <p id="targetStatusSub">আপনার কেনা প্রোডাক্ট ও ব্র্যান্ডের তথ্য যাচাই করা হচ্ছে।</p>
+        </div>
+      </div>
+      <div class="spin-count-badge" id="spinBadge">স্পিন বাকি: 0</div>
+    </div>
+
+    <div class="wheel-card">
+      <div class="wheel-wrapper">
+        <div class="wheel-pointer"></div>
+        <canvas id="wheelCanvas" width="340" height="340"></canvas>
+      </div>
+      <button id="spinBtn" class="btn-spin" onclick="startSpin()" disabled>🚀 ঘুরান (SPIN NOW)</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="winModal">
+    <div class="modal-box">
+      <div class="modal-icon" id="modalEmoji">🎉</div>
+      <div class="modal-title" id="modalTitle">অভিনন্দন!</div>
+      <div class="modal-desc" id="modalDesc">আপনি পেয়েছেন...</div>
+      <button class="btn-claim" onclick="closeModal()">ঠিক আছে</button>
+    </div>
+  </div>
+
+  <script>
+    var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpO6TXjmn0Y1axPmS8QyaqGQU_8MWDfp53LNMQ3D3aJDBujwLFtXxtH7S8RyTcrSBr/exec";
+    var rewards = [];
+    var spinsAvailable = 0;
+    var currentAngle = 0;
+    var isSpinning = false;
+    var canvas = document.getElementById('wheelCanvas');
+    var ctx = canvas.getContext('2d');
+
+    var customerUid = sessionStorage.getItem('customerUid') || localStorage.getItem('customerUid') || "DEFAULT_USER";
+    var selectedProduct = sessionStorage.getItem('spinProduct') || 'General';
+
+    window.onload = function() {
+      document.getElementById('headerProductSub').innerText = "প্রোডাক্ট: " + selectedProduct;
+      checkSpinEligibility();
+    };
+
+    function drawWheel() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var radius = canvas.width / 2;
+
+      if (!rewards || rewards.length === 0) {
+        ctx.beginPath();
+        ctx.arc(radius, radius, radius - 6, 0, 2 * Math.PI);
+        ctx.fillStyle = "#1e293b";
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.stroke();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "bold 14px 'Segoe UI', sans-serif";
+        ctx.fillText("কোনো রিওয়ার্ড নেই", radius, radius);
+        return;
+      }
+
+      var numSlices = rewards.length;
+      var sliceAngle = (2 * Math.PI) / numSlices;
+
+      for (var i = 0; i < numSlices; i++) {
+        var start = i * sliceAngle + currentAngle;
+        var end = start + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius - 6, start, end);
+        ctx.closePath();
+        ctx.fillStyle = rewards[i].color || '#6366f1';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(start + sliceAngle / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 12px 'Segoe UI', sans-serif";
+        ctx.fillText(rewards[i].label, radius - 18, 4);
+        ctx.restore();
+      }
+
+      ctx.beginPath();
+      ctx.arc(radius, radius, 25, 0, 2 * Math.PI);
+      ctx.fillStyle = "#0f172a";
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#38bdf8";
+      ctx.stroke();
+    }
+
+    function checkSpinEligibility() {
+      var requestUrl = WEB_APP_URL + "?action=getSpinWheelStatus&uid=" + encodeURIComponent(customerUid) + "&product=" + encodeURIComponent(selectedProduct);
+
+      fetch(requestUrl)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          updateEligibilityUI(data);
+        })
+        .catch(function(err) {
+          console.error(err);
+        });
+    }
+
+    function updateEligibilityUI(data) {
+      rewards = data.rewards || [];
+      spinsAvailable = data.spinsLeft || 0;
+      drawWheel();
+
+      document.getElementById('spinBadge').innerText = "স্পিন বাকি: " + spinsAvailable;
+
+      if (data.targetAchieved && spinsAvailable > 0 && rewards.length > 0) {
+        document.getElementById('statusIcon').innerText = "🎉";
+        document.getElementById('targetStatusTitle').innerText = "প্রোডাক্ট: " + (data.product || selectedProduct) + " | ব্র্যান্ড: " + (data.brand || "N/A") + " টার্গেট পূর্ণ!";
+        document.getElementById('targetStatusSub').innerText = "এই প্রোডাক্টের জন্য রিওয়ার্ড হুইল আনলক করা হয়েছে। স্পিন করুন!";
+        document.getElementById('spinBtn').disabled = false;
+      } else {
+        document.getElementById('statusIcon').innerText = "🔒";
+        document.getElementById('targetStatusTitle').innerText = rewards.length === 0 ? "এই প্রোডাক্ট বা ব্র্যান্ডের জন্য কোনো রিওয়ার্ড নেই" : "টার্গেট সম্পূর্ণ হয়নি বা স্পিন শেষ";
+        document.getElementById('targetStatusSub').innerText = rewards.length === 0 ? "রিওয়ার্ড পুলে আইটেম যোগ করা হলে স্পিন করতে পারবেন।" : "স্পিন করতে এই প্রোডাক্টের টার্গেট ১০০% পূর্ণ থাকতে হবে।";
+        document.getElementById('spinBtn').disabled = true;
+      }
+    }
+
+    function startSpin() {
+      if (isSpinning || spinsAvailable <= 0 || rewards.length === 0) return;
+
+      isSpinning = true;
+      document.getElementById('spinBtn').disabled = true;
+
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: "processSpinClaim", uid: customerUid, product: selectedProduct })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
+        if (res.success) {
+          animateSpin(res.winningIndex, res.rewardLabel);
+        } else {
+          alert(res.message);
+          isSpinning = false;
+          document.getElementById('spinBtn').disabled = false;
+        }
+      })
+      .catch(function(err) {
+        alert("ত্রুটি: " + err);
+        isSpinning = false;
+        document.getElementById('spinBtn').disabled = false;
+      });
+    }
+
+    function animateSpin(winningIndex, rewardLabel) {
+      var numSlices = rewards.length;
+      var sliceAngle = (2 * Math.PI) / numSlices;
+
+      var targetSliceCenter = (winningIndex * sliceAngle) + (sliceAngle / 2);
+      var pointerAngle = 1.5 * Math.PI;
+
+      var targetFinalAngle = pointerAngle - targetSliceCenter;
+      var extraRounds = 5 * (2 * Math.PI);
+      var totalRotation = extraRounds + (targetFinalAngle - (currentAngle % (2 * Math.PI)));
+
+      var startTime = null;
+      var duration = 4500;
+
+      function spinStep(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var elapsed = timestamp - startTime;
+        var progress = Math.min(elapsed / duration, 1);
+
+        var easeOut = 1 - Math.pow(1 - progress, 3);
+        currentAngle = easeOut * totalRotation;
+
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(spinStep);
+        } else {
+          isSpinning = false;
+          spinsAvailable = 0; 
+          document.getElementById('spinBadge').innerText = "স্পিন বাকি: 0";
+          showWinModal(rewardLabel);
+        }
+      }
+
+      requestAnimationFrame(spinStep);
+    }
+
+    function showWinModal(rewardLabel) {
+      document.getElementById('modalEmoji').innerText = "🎁";
+      document.getElementById('modalTitle').innerText = "অভিনন্দন! বিশেষ পুরস্কার!";
+      document.getElementById('modalDesc').innerText = "আপনি জিতেছেন: " + rewardLabel + "! আপনার রিওয়ার্ডটি এডমিন অনুমোদনের জন্য পাঠানো হয়েছে।";
+
+      document.getElementById('winModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('winModal').style.display = 'none';
+      goBackToDashboard();
+    }
+
+    function goBackToDashboard() {
+      sessionStorage.removeItem('spinProduct');
+      window.location.replace('CustomerDashboard.html');
+    }
+  </script>
+</body>
+</html>

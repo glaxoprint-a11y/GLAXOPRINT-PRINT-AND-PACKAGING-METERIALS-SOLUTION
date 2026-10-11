@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Management - Smart Loyalty System</title>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    body {
+      background: radial-gradient(circle at top left, #1e1b4b, #0f172a 70%);
+      color: #f8fafc;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container { max-width: 1250px; margin: 0 auto; }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 18px 24px;
+      border-radius: 18px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 24px;
+    }
+    .header-title h1 { font-size: 1.4rem; color: #38bdf8; letter-spacing: 0.5px; }
+    .header-title p { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+    
+    .btn-back {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 9px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .btn-back:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 992px) {
+      .grid-layout { grid-template-columns: 1fr; }
+    }
+
+    .panel-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      color: #f1f5f9;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .form-control:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #6366f1, #38bdf8);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 8px;
+    }
+    .btn-submit:hover { opacity: 0.92; box-shadow: 0 0 16px rgba(56, 189, 248, 0.35); }
+    .btn-submit:disabled { background: #475569; cursor: not-allowed; box-shadow: none; }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .alert-success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    .alert-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .table-tools {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .search-input { max-width: 300px; }
+
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.88rem;
+    }
+    th { background: rgba(0, 0, 0, 0.35); color: #94a3b8; font-weight: 600; white-space: nowrap; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .badge-status {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .badge-active { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-inactive { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .loading-row { text-align: center; color: #94a3b8; padding: 24px; font-style: italic; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <div class="header">
+      <div class="header-title">
+        <h1>👥 Customer Management</h1>
+        <p>নতুন কাস্টমার একাউন্ট রেজিস্টার করুন এবং বিদ্যমান কাস্টমার তালিকা পরিচালনা করুন</p>
+      </div>
+      <a href="AdminDashboard.html" class="btn-back">← Back to Dashboard</a>
+    </div>
+
+    <div class="grid-layout">
+      
+      <!-- Left Column: Add Customer Form -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>➕ Add New Customer</span>
+        </div>
+
+        <div id="formAlert" class="alert"></div>
+
+        <form id="addCustomerForm" onsubmit="handleCustomerSubmit(event)">
+          <div class="form-group">
+            <label for="custUid">Customer UID / Phone Number *</label>
+            <input type="text" id="custUid" class="form-control" placeholder="যেমন: 9876543210" required>
+          </div>
+
+          <div class="form-group">
+            <label for="custName">Customer Full Name *</label>
+            <input type="text" id="custName" class="form-control" placeholder="যেমন: রহিম শেখ" required>
+          </div>
+
+          <div class="form-group">
+            <label for="custCity">City / Location</label>
+            <input type="text" id="custCity" class="form-control" placeholder="যেমন: কোলকাতা">
+          </div>
+
+          <div class="form-group">
+            <label for="custPassword">Account Password / PIN *</label>
+            <input type="password" id="custPassword" class="form-control" placeholder="••••••••" required>
+          </div>
+
+          <div class="form-group">
+            <label for="custStatus">Account Status</label>
+            <select id="custStatus" class="form-control">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn-submit">সেভ করুন</button>
+        </form>
+      </div>
+
+      <!-- Right Column: Customer List Table -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>📋 All Registered Customers</span>
+        </div>
+
+        <div class="table-tools">
+          <input type="text" id="searchBox" class="form-control search-input" placeholder="🔍 সার্চ করুন (নাম বা আইডি)..." onkeyup="filterCustomers()">
+          <span style="font-size: 0.85rem; color: #94a3b8;">Total: <strong id="customerCount" style="color:#38bdf8;">0</strong></span>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>UID / Phone</th>
+                <th>Name</th>
+                <th>City</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="customerTableBody">
+              <tr>
+                <td colspan="5" class="loading-row">ডাটাবেজ থেকে কাস্টমার তালিকা লোড হচ্ছে...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+<script>
+  // Google Apps Script Web App URL
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpO6TXjmn0Y1axPmS8QyaqGQU_8MWDfp53LNMQ3D3aJDBujwLFtXxtH7S8RyTcrSBr/exec";
+
+  var allCustomers = [];
+
+  window.onload = function() {
+    // কোনো সিকিউরিটি গার্ড বা চেক ছাড়াই সরাসরি ডাটা লোড ফাংশন কল হবে
+    loadCustomerList();
+  };
+
+  function loadCustomerList() {
+    fetch(WEB_APP_URL + "?action=getCustomersList")
+      .then(function(response) { return response.text(); })
+      .then(function(text) {
+        try {
+          var data = JSON.parse(text);
+          renderCustomerTable(data);
+        } catch (e) {
+          console.error("JSON Parsing Error:", text);
+          throw new Error("সার্ভার থেকে সঠিক ডাটা আসেনি।");
+        }
+      })
+      .catch(function(err) {
+        handleLoadError(err);
+      });
+  }
+
+  function renderCustomerTable(data) {
+    allCustomers = Array.isArray(data) ? data : (data.data || []);
+    
+    var countEl = document.getElementById('customerCount');
+    if (countEl) countEl.innerText = allCustomers.length;
+
+    var tbody = document.getElementById('customerTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (allCustomers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">কোনো কাস্টমার ডাটা পাওয়া যায়নি।</td></tr>';
+      return;
+    }
+
+    var html = '';
+    allCustomers.forEach(function(cust) {
+      var uid = String(cust.uid || '');
+      var name = String(cust.name || '');
+      var city = String(cust.city || '-');
+      var status = String(cust.status || 'Active');
+
+      var statusBadge = status === "Active" 
+        ? '<span class="badge-status badge-active">Active</span>' 
+        : '<span class="badge-status badge-inactive">Inactive</span>';
+
+      html += '<tr>' +
+        '<td><strong>' + uid + '</strong></td>' +
+        '<td>' + name + '</td>' +
+        '<td>' + city + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td><button type="button" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size:0.85rem;" onclick="editCustomer(\'' + uid + '\')">✏️ Edit</button></td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  function filterCustomers() {
+    var query = document.getElementById('searchBox').value.toLowerCase().trim();
+    var filtered = allCustomers.filter(function(cust) {
+      var uidStr = String(cust.uid || '').toLowerCase();
+      var nameStr = String(cust.name || '').toLowerCase();
+      return uidStr.includes(query) || nameStr.includes(query);
+    });
+
+    var tbody = document.getElementById('customerTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">কোনো রেজাল্ট মেলেনি।</td></tr>';
+      return;
+    }
+
+    var html = '';
+    filtered.forEach(function(cust) {
+      var uid = String(cust.uid || '');
+      var name = String(cust.name || '');
+      var city = String(cust.city || '-');
+      var status = String(cust.status || 'Active');
+
+      var statusBadge = status === "Active" 
+        ? '<span class="badge-status badge-active">Active</span>' 
+        : '<span class="badge-status badge-inactive">Inactive</span>';
+
+      html += '<tr>' +
+        '<td><strong>' + uid + '</strong></td>' +
+        '<td>' + name + '</td>' +
+        '<td>' + city + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td><button type="button" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size:0.85rem;" onclick="editCustomer(\'' + uid + '\')">✏️ Edit</button></td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  function handleCustomerSubmit(event) {
+    if (event) event.preventDefault();
+    
+    var uid = document.getElementById('custUid').value.trim();
+    var name = document.getElementById('custName').value.trim();
+    var city = document.getElementById('custCity').value.trim();
+    var password = document.getElementById('custPassword').value.trim();
+    var status = document.getElementById('custStatus').value;
+
+    var submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerText = "সেভ হচ্ছে...";
+
+    var payload = { uid: uid, name: name, phone: uid, city: city, password: password, status: status };
+
+    fetch(WEB_APP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'addNewCustomer', payload: payload })
+    })
+    .then(function(response) { return response.text(); })
+    .then(function(text) {
+      try {
+        var res = JSON.parse(text);
+        onSaveSuccess(res);
+      } catch (e) {
+        console.error("JSON Error:", text);
+        throw new Error("সার্ভার থেকে সঠিক রেসপন্স আসেনি।");
+      }
+    })
+    .catch(function(err) {
+      onSaveError(err);
+    });
+
+    return false;
+  }
+
+  function onSaveSuccess(res) {
+    if (res && res.success) {
+      showAlert('formAlert', 'alert-success', res.message || 'কাস্টমার সফলভাবে সেভ করা হয়েছে!');
+      var form = document.getElementById('addCustomerForm');
+      if (form) form.reset();
+      loadCustomerList();
+    } else {
+      showAlert('formAlert', 'alert-danger', (res && res.message) || 'সেভ করতে সমস্যা হয়েছে!');
+    }
+    resetSubmitBtn();
+  }
+
+  function onSaveError(err) {
+    showAlert('formAlert', 'alert-danger', 'সার্ভার ত্রুটি: ' + err.message);
+    resetSubmitBtn();
+  }
+
+  function resetSubmitBtn() {
+    var submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "সেভ করুন";
+    }
+  }
+
+  function showAlert(elementId, className, message) {
+    var alertBox = document.getElementById(elementId);
+    if (!alertBox) return;
+    alertBox.className = 'alert ' + className;
+    alertBox.innerText = message;
+    alertBox.style.display = 'block';
+    setTimeout(function() { alertBox.style.display = 'none'; }, 4000);
+  }
+
+  function handleLoadError(err) {
+    console.error("Load error:", err);
+    var tbody = document.getElementById('customerTableBody');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#ef4444; padding:20px;">ডাটা ফেচ করতে ব্যর্থ হয়েছে: ' + err.message + '</td></tr>';
+    }
+  }
+
+  function editCustomer(uid) {
+    var cust = allCustomers.find(function(c) { return String(c.uid) === String(uid); });
+    if (cust) {
+      document.getElementById('custUid').value = cust.uid || '';
+      document.getElementById('custName').value = cust.name || '';
+      document.getElementById('custCity').value = cust.city || '';
+      document.getElementById('custStatus').value = cust.status || 'Active';
+    }
+  }
+</script>
+</body>
+</html>

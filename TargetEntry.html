@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Target Management - Smart Loyalty System</title>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      background: radial-gradient(circle at top left, #1e1b4b, #0f172a 70%);
+      color: #f8fafc;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 1250px; margin: 0 auto; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 20px 28px; border-radius: 20px; backdrop-filter: blur(16px); margin-bottom: 28px;
+    }
+    .header-title h1 { font-size: 1.5rem; color: #38bdf8; font-weight: 700; }
+    .header-title p { font-size: 0.88rem; color: #94a3b8; margin-top: 4px; }
+    .btn-back {
+      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1; padding: 10px 20px; border-radius: 12px; cursor: pointer; text-decoration: none; font-weight: 600;
+      transition: 0.3s;
+    }
+    .btn-back:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+    .grid-layout { display: grid; grid-template-columns: 400px 1fr; gap: 24px; }
+    @media (max-width: 1024px) { .grid-layout { grid-template-columns: 1fr; } }
+    .panel-card {
+      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px; padding: 26px; backdrop-filter: blur(16px); margin-bottom: 24px;
+    }
+    .panel-title { font-size: 1.15rem; color: #f1f5f9; font-weight: 600; margin-bottom: 22px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 14px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 6px; font-weight: 500; }
+    .form-control {
+      width: 100%; padding: 11px 15px; background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; color: #fff; font-size: 0.9rem; outline: none;
+    }
+    select.form-control option { background: #0f172a; color: #fff; }
+    .btn-submit {
+      width: 100%; padding: 12px; background: linear-gradient(135deg, #6366f1, #38bdf8);
+      border: none; border-radius: 12px; color: #fff; font-weight: 600; cursor: pointer; margin-top: 8px;
+    }
+    .btn-entry { background: linear-gradient(135deg, #10b981, #059669); }
+    .alert { padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 15px; display: none; }
+    .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; }
+    .table-responsive { overflow-x: auto; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.08); }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 0.88rem; }
+    th { background: rgba(0, 0, 0, 0.4); color: #94a3b8; font-weight: 600; }
+    .progress-bar-container { width: 100px; background: rgba(255, 255, 255, 0.08); height: 9px; border-radius: 6px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 8px; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #10b981); border-radius: 6px; }
+    .badge-status { font-size: 0.75rem; padding: 5px 12px; border-radius: 14px; font-weight: 600; display: inline-block; }
+    .badge-complete { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-title">
+        <h1>🎯 Customer Target & Entry Management</h1>
+        <p>টার্গেট সেট করুন এবং সরাসরি এন্ট্রির মাধ্যমে প্রোগ্রেস আপডেট করুন</p>
+      </div>
+      <a href="AdminDashboard.html" class="btn-back">← Back to Dashboard</a>
+    </div>
+
+    <div class="grid-layout">
+      <!-- Left Side Forms -->
+      <div>
+        <!-- Form 1: Set Target -->
+        <div class="panel-card">
+          <div class="panel-title">🎯 Set Target</div>
+          <div id="targetAlert" class="alert"></div>
+          <form id="targetForm" onsubmit="handleTargetSubmit(event)">
+            <div class="form-group">
+              <label for="targetCustomer">Select Customer *</label>
+              <select id="targetCustomer" class="form-control" required>
+                <option value="">কাস্টমার সিলেক্ট করুন...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="targetProduct">Select Product *</label>
+              <select id="targetProduct" class="form-control" required onchange="onProductSelectForTarget()">
+                <option value="">প্রোডাক্ট সিলেক্ট করুন...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="targetBrand">Brand / Band *</label>
+              <input type="text" id="targetBrand" class="form-control" placeholder="অটোমেটিক সিলেক্ট হবে" readonly required>
+            </div>
+            <div class="form-group">
+              <label for="targetAmount">Target Amount (₹) *</label>
+              <input type="number" id="targetAmount" class="form-control" placeholder="যেমন: 50000" min="100" required>
+            </div>
+            <button type="submit" class="btn-submit">টার্গেট সেভ করুন</button>
+          </form>
+        </div>
+
+        <!-- Form 2: Quick Amount Entry -->
+        <div class="panel-card">
+          <div class="panel-title">⚡ Quick Amount Entry</div>
+          <div id="entryAlert" class="alert"></div>
+          <form id="entryForm" onsubmit="handleEntrySubmit(event)">
+            <div class="form-group">
+              <label for="entryCustomer">Select Customer *</label>
+              <select id="entryCustomer" class="form-control" required>
+                <option value="">কাস্টমার সিলেক্ট করুন...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="entryProduct">Select Product *</label>
+              <select id="entryProduct" class="form-control" required onchange="onProductSelectForEntry()">
+                <option value="">প্রোডাক্ট সিলেক্ট করুন...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="entryBrand">Brand / Band *</label>
+              <input type="text" id="entryBrand" class="form-control" placeholder="অটোমেটিক সিলেক্ট হবে" readonly required>
+            </div>
+            <div class="form-group">
+              <label for="entryAmount">Amount to Add (₹) *</label>
+              <input type="number" id="entryAmount" class="form-control" placeholder="যেমন: 5000" min="1" required>
+            </div>
+            <button type="submit" class="btn-submit btn-entry">এন্ট্রি যোগ করুন (Add)</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right Side: Target & Progress Log Table -->
+      <div>
+        <div class="panel-card">
+          <div class="panel-title">📋 Customer Target & Progress Log</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer UID</th>
+                  <th>Name</th>
+                  <th>Product / Brand</th>
+                  <th>Target</th>
+                  <th>Achieved</th>
+                  <th>Progress</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="targetTableBody">
+                <tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:30px;">ডাটা লোড হচ্ছে...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpO6TXjmn0Y1axPmS8QyaqGQU_8MWDfp53LNMQ3D3aJDBujwLFtXxtH7S8RyTcrSBr/exec";
+
+    window.onload = function() {
+      // কোনো সিকিউরিটি চেক ছাড়াই সরাসরি ডাটা লোড ফাংশন কল হবে
+      loadInitialData();
+    };
+
+    function loadInitialData() {
+      fetch(WEB_APP_URL + "?action=getTargetPageData")
+        .then(res => res.json())
+        .then(data => { renderInitialData(data); })
+        .catch(err => console.error("Error:", err));
+    }
+
+    function renderInitialData(data) {
+      var customerList = data.customers || [];
+      var productList = data.products || [];
+      var targetLogs = data.targets || [];
+
+      var cust1 = document.getElementById('targetCustomer');
+      var cust2 = document.getElementById('entryCustomer');
+      cust1.innerHTML = cust2.innerHTML = '<option value="">কাস্টমার সিলেক্ট করুন...</option>';
+      customerList.forEach(c => {
+        var opt = `<option value="${c.uid}">${c.name} (${c.uid})</option>`;
+        cust1.innerHTML += opt;
+        cust2.innerHTML += opt;
+      });
+
+      var prod1 = document.getElementById('targetProduct');
+      var prod2 = document.getElementById('entryProduct');
+      prod1.innerHTML = prod2.innerHTML = '<option value="">প্রোডাক্ট সিলেক্ট করুন...</option>';
+      productList.forEach(p => {
+        var opt = `<option value="${p.name}" data-brand="${p.brand}">${p.name} (${p.brand})</option>`;
+        prod1.innerHTML += opt;
+        prod2.innerHTML += opt;
+      });
+
+      var tbody = document.getElementById('targetTableBody');
+      tbody.innerHTML = '';
+      if (targetLogs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:20px;">কোনো টার্গেট রেকর্ড পাওয়া যায়নি।</td></tr>';
+        return;
+      }
+
+      targetLogs.forEach(t => {
+        var pct = t.target > 0 ? Math.min(100, Math.round((t.achieved / t.target) * 100)) : 0;
+        var badge = t.status === "COMPLETED" 
+          ? '<span class="badge-status badge-complete">COMPLETED</span>' 
+          : '<span class="badge-status badge-pending">In Progress</span>';
+
+        tbody.innerHTML += `<tr>
+          <td><strong>${t.uid}</strong></td>
+          <td>${t.name}</td>
+          <td><span style="color:#38bdf8;">${t.product}</span><br><small style="color:#94a3b8;">${t.brand}</small></td>
+          <td>₹${Number(t.target).toLocaleString('en-IN')}</td>
+          <td><strong style="color:#10b981;">₹${Number(t.achieved).toLocaleString('en-IN')}</strong></td>
+          <td>
+            <div class="progress-bar-container"><div class="progress-bar-fill" style="width:${pct}%;"></div></div>
+            <span>${pct}%</span>
+          </td>
+          <td>${badge}</td>
+        </tr>`;
+      });
+    }
+
+    function onProductSelectForTarget() {
+      var sel = document.getElementById('targetProduct');
+      document.getElementById('targetBrand').value = sel.options[sel.selectedIndex].getAttribute('data-brand') || '';
+    }
+
+    function onProductSelectForEntry() {
+      var sel = document.getElementById('entryProduct');
+      document.getElementById('entryBrand').value = sel.options[sel.selectedIndex].getAttribute('data-brand') || '';
+    }
+
+    function handleTargetSubmit(e) {
+      e.preventDefault();
+      var payload = {
+        uid: document.getElementById('targetCustomer').value,
+        product: document.getElementById('targetProduct').value,
+        brand: document.getElementById('targetBrand').value,
+        amount: document.getElementById('targetAmount').value
+      };
+
+      fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "assignCustomerTarget", payload: payload }) })
+        .then(res => res.json())
+        .then(res => {
+          showAlert('targetAlert', 'alert-success', res.message);
+          document.getElementById('targetForm').reset();
+          document.getElementById('targetBrand').value = '';
+          loadInitialData();
+        });
+    }
+
+    function handleEntrySubmit(e) {
+      e.preventDefault();
+      var payload = {
+        uid: document.getElementById('entryCustomer').value,
+        product: document.getElementById('entryProduct').value,
+        brand: document.getElementById('entryBrand').value,
+        amount: document.getElementById('entryAmount').value
+      };
+
+      fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "addCustomerPurchaseEntry", payload: payload }) })
+        .then(res => res.json())
+        .then(res => {
+          showAlert('entryAlert', 'alert-success', res.message);
+          document.getElementById('entryForm').reset();
+          document.getElementById('entryBrand').value = '';
+          loadInitialData();
+        });
+    }
+
+    function showAlert(id, className, msg) {
+      var box = document.getElementById(id);
+      box.className = 'alert ' + className;
+      box.innerText = msg;
+      box.style.display = 'block';
+      setTimeout(() => box.style.display = 'none', 4000);
+    }
+  </script>
+</body>
+</html>

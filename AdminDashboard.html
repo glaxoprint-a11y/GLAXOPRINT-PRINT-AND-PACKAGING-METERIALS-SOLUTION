@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; min-height: 100vh; padding: 20px; }
+    
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    /* System Header */
+    .header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      background: rgba(255, 255, 255, 0.05); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      padding: 20px 24px; 
+      border-radius: 16px; 
+      backdrop-filter: blur(12px); 
+      margin-bottom: 24px; 
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .system-title h1 { font-size: 1.5rem; color: #38bdf8; letter-spacing: 0.5px; }
+    .system-title p { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+    
+    .admin-profile-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .admin-profile { text-align: right; }
+    .admin-name { font-weight: 600; color: #f1f5f9; }
+    .admin-role { font-size: 0.8rem; color: #ec4899; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); padding: 2px 10px; border-radius: 12px; display: inline-block; margin-top: 4px; }
+
+    /* Logout Button Styling */
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      outline: none;
+    }
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+
+    /* Dashboard Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 20px; backdrop-filter: blur(10px); transition: transform 0.2s ease; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-title { font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: #38bdf8; }
+    .stat-card:nth-child(2) .stat-value { color: #10b981; }
+    .stat-card:nth-child(3) .stat-value { color: #f59e0b; }
+    .stat-card:nth-child(4) .stat-value { color: #ec4899; }
+
+    /* Quick Navigation Cards */
+    .section-title { font-size: 1.1rem; color: #e2e8f0; margin-bottom: 16px; font-weight: 600; }
+    .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .nav-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 20px; border-radius: 12px; cursor: pointer; transition: all 0.3s; text-decoration: none; color: inherit; display: block; }
+    .nav-card:hover { background: rgba(255, 255, 255, 0.08); border-color: #6366f1; transform: translateY(-2px); }
+    .nav-card h3 { font-size: 1rem; color: #818cf8; margin-bottom: 6px; }
+    .nav-card p { font-size: 0.82rem; color: #94a3b8; line-height: 1.4; }
+
+    /* Recent Data Table */
+    .table-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; backdrop-filter: blur(12px); }
+    .table-responsive { overflow-x: auto; margin-top: 12px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.88rem; }
+    th { background: rgba(0, 0, 0, 0.3); color: #94a3b8; font-weight: 600; }
+    .loading { text-align: center; color: #94a3b8; padding: 20px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- System Header -->
+    <div class="header">
+      <div class="system-title">
+        <h1 id="systemName">SMART LOYALTY ADMIN SYSTEM</h1>
+        <p>Google Sheets Database Status: Active</p>
+      </div>
+      
+      <div class="admin-profile-container">
+        <div class="admin-profile">
+          <div class="admin-name" id="adminUsername">Super Admin</div>
+          <span class="admin-role">System Administrator</span>
+        </div>
+        <!-- Logout Button -->
+        <button class="btn-logout" onclick="logoutAdmin()">
+          🚪 Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Database Summary Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">Total Customers</div>
+        <div class="stat-value" id="totalCustomers">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Total Products</div>
+        <div class="stat-value" id="totalProducts">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Active Targets</div>
+        <div class="stat-value" id="activeTargets">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Pending Spin Requests</div>
+        <div class="stat-value" id="pendingSpins">--</div>
+      </div>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="section-title">Management Modules</div>
+    <div class="nav-grid">
+      <div class="nav-card" onclick="openModule('CustomerManagement')">
+        <h3>👥 Customer Management</h3>
+        <p>Add new customers, view accounts and manage login details.</p>
+      </div>
+      <div class="nav-card" onclick="openModule('ProductManagement')">
+        <h3>📦 Products & Rewards</h3>
+        <p>Manage product types, bands and set reward items.</p>
+      </div>
+      <div class="nav-card" onclick="openModule('TargetEntry')">
+        <h3>🎯 Targets & Sales</h3>
+        <p>Assign targets to customers and record purchase logs.</p>
+      </div>
+      <div class="nav-card" onclick="openModule('ApprovalLogs')">
+        <h3>🎰 Spin Approvals</h3>
+        <p>Review customer spin wins and issue final reward approvals.</p>
+      </div>
+    </div>
+
+    <!-- Recent System Logs Table -->
+    <div class="table-card">
+      <div class="section-title" style="margin-bottom: 0;">Recent Activity Logs</div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Customer UID</th>
+              <th>Activity / Request</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="activityLogs">
+            <tr>
+              <td colspan="4" class="loading">Loading live data from Google Sheets database...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // আপনার দেওয়া Google Apps Script Web App URL
+  var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpO6TXjmn0Y1axPmS8QyaqGQU_8MWDfp53LNMQ3D3aJDBujwLFtXxtH7S8RyTcrSBr/exec";
+
+  // Initial Load Logic
+  window.onload = function() {
+    fetchAdminDashboardData();
+  };
+
+  // fetch() API দিয়ে গুগল সিট থেকে ড্যাশবোর্ড ডাটা আনা
+  function fetchAdminDashboardData() {
+    fetch(WEB_APP_URL + "?action=getAdminDashboardSummary")
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("নেটওয়ার্ক রেসপন্স ঠিক নেই!");
+        }
+        return response.text();
+      })
+      .then(text => {
+        try {
+          var data = JSON.parse(text);
+          renderDashboard(data);
+        } catch (e) {
+          console.error("JSON Parsing Error:", text);
+          throw new Error("সার্ভার থেকে সঠিক ডাটা পাওয়া যায়নি। Google Apps Script Permission চেক করুন।");
+        }
+      })
+      .catch(error => {
+        handleFetchError(error);
+      });
+  }
+
+  function renderDashboard(data) {
+    if (!data) return;
+
+    document.getElementById('totalCustomers').innerText = data.customersCount || 0;
+    document.getElementById('totalProducts').innerText = data.productsCount || 0;
+    document.getElementById('activeTargets').innerText = data.targetsCount || 0;
+    document.getElementById('pendingSpins').innerText = data.pendingSpinsCount || 0;
+
+    var tbody = document.getElementById('activityLogs');
+    tbody.innerHTML = '';
+
+    if (data.recentLogs && data.recentLogs.length > 0) {
+      data.recentLogs.forEach(function(log) {
+        var statusColor = log.status === "Approved" ? "#10b981" : "#f59e0b";
+        var row = '<tr>' +
+          '<td>' + (log.time || '-') + '</td>' +
+          '<td>' + (log.customerId || '-') + '</td>' +
+          '<td>' + (log.action || '-') + '</td>' +
+          '<td><span style="color:' + statusColor + '; font-weight:600;">' + (log.status || '-') + '</span></td>' +
+          '</tr>';
+        tbody.innerHTML += row;
+      });
+    } else {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">No recent activity logs found.</td></tr>';
+    }
+  }
+
+  function handleFetchError(error) {
+    console.error("Dashboard Loading Error:", error);
+    document.getElementById('activityLogs').innerHTML = '<tr><td colspan="4" style="text-align:center; color:#ef4444;">Failed to fetch database information. (' + error.message + ')</td></tr>';
+  }
+
+  // পেজ নেভিগেশন
+  function openModule(pageName) {
+    window.location.href = pageName + ".html";
+  }
+
+  // Admin Logout Function
+  function logoutAdmin() {
+    sessionStorage.clear();
+    localStorage.removeItem('adminSession');
+    localStorage.removeItem('adminLoggedIn');
+    window.location.replace("AdminLogin.html");
+  }
+</script>
+</body>
+</html>

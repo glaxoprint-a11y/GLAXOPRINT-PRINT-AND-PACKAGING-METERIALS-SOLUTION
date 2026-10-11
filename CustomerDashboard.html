@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard - Smart Loyalty System</title>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: radial-gradient(circle at top left, #1e1b4b, #0f172a 70%); color: #f8fafc; min-height: 100vh; padding: 20px; }
+    
+    .container { max-width: 1100px; margin: 0 auto; }
+    
+    /* Customer Header */
+    .header { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px 24px; border-radius: 18px; backdrop-filter: blur(12px); margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .user-info h1 { font-size: 1.4rem; color: #38bdf8; letter-spacing: 0.5px; }
+    .user-info p { font-size: 0.85rem; color: #94a3b8; margin-top: 6px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .badge-uid { font-size: 0.80rem; color: #818cf8; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); padding: 3px 10px; border-radius: 20px; }
+    .badge-shop { font-size: 0.80rem; color: #34d399; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); padding: 3px 10px; border-radius: 20px; }
+    
+    .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 8px 16px; border-radius: 10px; cursor: pointer; transition: 0.3s; font-weight: 600; font-size: 0.85rem; }
+    .btn-logout:hover { background: rgba(239, 68, 68, 0.4); color: #fff; }
+
+    /* Dashboard Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; backdrop-filter: blur(10px); }
+    .stat-title { font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; color: #38bdf8; }
+    .stat-card:nth-child(2) .stat-value { color: #10b981; }
+    .stat-card:nth-child(3) .stat-value { color: #f59e0b; }
+    .stat-card:nth-child(4) .stat-value { color: #ec4899; }
+
+    /* Section & Card Styling */
+    .section-title { font-size: 1.1rem; color: #e2e8f0; margin-bottom: 16px; font-weight: 600; }
+    .product-target-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; margin-bottom: 16px; backdrop-filter: blur(12px); }
+    .product-info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+    .product-name { font-size: 1rem; color: #38bdf8; font-weight: 600; }
+    .product-brand { font-size: 0.8rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 8px; border-radius: 6px; }
+    
+    .progress-details { display: flex; justify-content: space-between; font-size: 0.85rem; color: #94a3b8; margin-bottom: 6px; }
+    .progress-bar-bg { width: 100%; background: rgba(255, 255, 255, 0.1); height: 12px; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+    .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #6366f1, #10b981); border-radius: 10px; transition: width 0.8s ease-in-out; }
+
+    .spin-action-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 10px; }
+    .target-status-text { font-size: 0.82rem; font-weight: 600; }
+    
+    .btn-spin { background: linear-gradient(90deg, #ec4899, #8b5cf6); border: none; color: #fff; padding: 8px 18px; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.3s; }
+    .btn-spin:hover { opacity: 0.9; box-shadow: 0 0 12px rgba(236, 72, 153, 0.4); }
+    .btn-spin:disabled { background: #475569; cursor: not-allowed; opacity: 0.6; box-shadow: none; }
+
+    .loading { text-align: center; color: #94a3b8; padding: 20px; font-style: italic; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Customer Top Bar -->
+    <div class="header">
+      <div class="user-info">
+        <h1 id="customerName">প্রোফাইল লোড হচ্ছে...</h1>
+        <p>
+          <span>UID: <strong class="badge-uid" id="customerUid">--</strong></span>
+          <span>এলাকা: <strong class="badge-shop" id="customerShop">--</strong></span>
+          <span>মোবাইল: <strong id="customerPhone" style="color: #cbd5e1;">--</strong></span>
+        </p>
+      </div>
+      <button type="button" class="btn-logout" onclick="logout()">লগআউট (Logout)</button>
+    </div>
+
+    <!-- Monthly Stats Summary -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">Total Target Value</div>
+        <div class="stat-value" id="targetAmount">₹0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Total Achieved</div>
+        <div class="stat-value" id="achievedAmount">₹0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Remaining Target</div>
+        <div class="stat-value" id="remainingAmount">₹0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Total Rewards Won</div>
+        <div class="stat-value" id="totalRewards">0</div>
+      </div>
+    </div>
+
+    <!-- Product-wise Targets Section -->
+    <div class="section-title">📦 My Product Targets & Spin Status</div>
+    <div id="productTargetsContainer">
+      <div class="loading">টার্গেট তথ্য লোড হচ্ছে...</div>
+    </div>
+
+  </div>
+
+<script>
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpO6TXjmn0Y1axPmS8QyaqGQU_8MWDfp53LNMQ3D3aJDBujwLFtXxtH7S8RyTcrSBr/exec";
+
+  window.onload = function() {
+    checkAuthAndFetchData();
+  };
+
+  function checkAuthAndFetchData() {
+    const custUid = sessionStorage.getItem('customerUid') || localStorage.getItem('customerUid');
+    if (!custUid) {
+      window.location.href = 'CustomerLogin.html';
+      return;
+    }
+    fetchCustomerDashboard(custUid);
+  }
+
+  function fetchCustomerDashboard(uid) {
+    const requestUrl = WEB_APP_URL + "?action=getCustomerDashboardData&uid=" + encodeURIComponent(uid);
+
+    fetch(requestUrl)
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          handleError(data.error);
+          return;
+        }
+        renderCustomerData(data);
+      })
+      .catch(error => {
+        handleError(error.message || error);
+      });
+  }
+
+  function renderCustomerData(data) {
+    if (!data) return;
+
+    // Profile Info
+    document.getElementById('customerName').innerText = data.name || 'Customer';
+    document.getElementById('customerUid').innerText = data.uid || 'N/A';
+    document.getElementById('customerShop').innerText = data.city || 'N/A';
+    document.getElementById('customerPhone').innerText = data.phone || 'N/A';
+
+    let totalTarget = 0;
+    let totalAchieved = 0;
+
+    const targetsContainer = document.getElementById('productTargetsContainer');
+    targetsContainer.innerHTML = '';
+
+    if (data.productTargets && data.productTargets.length > 0) {
+      data.productTargets.forEach(function(item) {
+        const targetVal = parseFloat(item.target) || 0;
+        const achievedVal = parseFloat(item.achieved) || 0;
+        const itemStatus = String(item.status || '').toUpperCase();
+        
+        totalTarget += targetVal;
+        totalAchieved += achievedVal;
+
+        const percentage = targetVal > 0 ? Math.min(100, Math.round((achievedVal / targetVal) * 100)) : 0;
+        
+        // Target achieved amounts ba COMPLETED status duitoi check kora hocche
+        const isCompleted = (achievedVal >= targetVal && targetVal > 0) || itemStatus === 'COMPLETED';
+
+        let statusText = isCompleted ? '<span style="color:#10b981;">🎉 টার্গেট পূর্ণ হয়েছে! স্পিন করুন</span>' : '<span style="color:#f59e0b;">⏳ টার্গেট পূরণ বাকি আছে</span>';
+        
+        let cardHtml = '<div class="product-target-card">' +
+          '<div class="product-info-row">' +
+            '<span class="product-name">' + (item.product || 'Product') + '</span>' +
+            '<span class="product-brand">' + (item.brand || 'Brand') + '</span>' +
+          '</div>' +
+          '<div class="progress-details">' +
+            '<span>অর্জিত: <strong>₹' + achievedVal.toLocaleString('en-IN') + '</strong> / লক্ষ্য: <strong>₹' + targetVal.toLocaleString('en-IN') + '</strong></span>' +
+            '<span><strong>' + percentage + '%</strong></span>' +
+          '</div>' +
+          '<div class="progress-bar-bg">' +
+            '<div class="progress-bar-fill" style="width: ' + percentage + '%;"></div>' +
+          '</div>' +
+          '<div class="spin-action-row">' +
+            '<div class="target-status-text">' + statusText + '</div>' +
+            '<button type="button" class="btn-spin" ' + (!isCompleted ? 'disabled' : '') + ' onclick="openSpinWheel(\'' + (item.product || '') + '\')">🎰 Lucky Spin</button>' +
+          '</div>' +
+        '</div>';
+
+        targetsContainer.innerHTML += cardHtml;
+      });
+    } else {
+      targetsContainer.innerHTML = '<div class="product-target-card" style="text-align:center; color:#94a3b8;">কোনো সক্রিয় প্রোডাক্ট টার্গেট পাওয়া যায়নি।</div>';
+    }
+
+    // Summary Stats
+    const remaining = totalTarget - totalAchieved;
+    document.getElementById('targetAmount').innerText = '₹' + totalTarget.toLocaleString('en-IN');
+    document.getElementById('achievedAmount').innerText = '₹' + totalAchieved.toLocaleString('en-IN');
+    document.getElementById('remainingAmount').innerText = '₹' + (remaining > 0 ? remaining.toLocaleString('en-IN') : 0);
+    document.getElementById('totalRewards').innerText = data.rewardsCount || (data.recentRewards ? data.recentRewards.length : 0);
+  }
+
+  function openSpinWheel(productName) {
+    sessionStorage.setItem('spinProduct', productName);
+    window.location.href = 'SpinWheel.html';
+  }
+
+  function handleError(error) {
+    console.error("Dashboard Loading Error:", error);
+    document.getElementById('productTargetsContainer').innerHTML = '<div style="text-align:center; color:#ef4444; padding:20px;">প্রোফাইলের তথ্য লোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।</div>';
+  }
+
+  function logout() {
+    sessionStorage.clear();
+    localStorage.clear();
+    window.location.href = 'CustomerLogin.html';
+  }
+</script>
+</body>
+</html>
