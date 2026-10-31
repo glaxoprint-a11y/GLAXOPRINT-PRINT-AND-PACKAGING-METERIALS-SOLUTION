@@ -186,9 +186,9 @@
 
     // Summary Stats
     const remaining = totalTarget - totalAchieved;
-    document.getElementById('targetAmount').innerText = '₹' + totalTarget.toLocaleString('en-IN');
-    document.getElementById('achievedAmount').innerText = '₹' + totalAchieved.toLocaleString('en-IN');
-    document.getElementById('remainingAmount').innerText = '₹' + (remaining > 0 ? remaining.toLocaleString('en-IN') : 0);
+    document.getElementById('targetAmount').innerText = '' + totalTarget.toLocaleString('en-IN');
+    document.getElementById('achievedAmount').innerText = '' + totalAchieved.toLocaleString('en-IN');
+    document.getElementById('remainingAmount').innerText = '' + (remaining > 0 ? remaining.toLocaleString('en-IN') : 0);
     document.getElementById('totalRewards').innerText = data.rewardsCount || (data.recentRewards ? data.recentRewards.length : 0);
   }
 
